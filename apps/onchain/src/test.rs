@@ -1,5 +1,5 @@
 use super::*;
-use soroban_sdk::{token, Address, Env, testutils::Address as _, vec};
+use soroban_sdk::{Address, Env, testutils::Address as _, token, vec};
 
 fn create_token_contract<'a>(
     env: &Env,
@@ -649,10 +649,10 @@ fn test_initialize_contract() {
     let client = VaultixEscrowClient::new(&env, &contract_id);
 
     let treasury = Address::generate(&env);
-    
+
     // Initialize with default fee
     client.initialize(&treasury, &None);
-    
+
     let (stored_treasury, fee_bps) = client.get_config();
     assert_eq!(stored_treasury, treasury);
     assert_eq!(fee_bps, 50); // Default 0.5%
@@ -667,10 +667,10 @@ fn test_initialize_with_custom_fee() {
     let client = VaultixEscrowClient::new(&env, &contract_id);
 
     let treasury = Address::generate(&env);
-    
+
     // Initialize with custom fee (1%)
     client.initialize(&treasury, &Some(100));
-    
+
     let (stored_treasury, fee_bps) = client.get_config();
     assert_eq!(stored_treasury, treasury);
     assert_eq!(fee_bps, 100);
@@ -686,7 +686,7 @@ fn test_initialize_invalid_fee() {
     let client = VaultixEscrowClient::new(&env, &contract_id);
 
     let treasury = Address::generate(&env);
-    
+
     // Try to initialize with fee > 100% (should panic)
     client.initialize(&treasury, &Some(10001));
 }
@@ -701,10 +701,10 @@ fn test_update_fee() {
 
     let treasury = Address::generate(&env);
     client.initialize(&treasury, &Some(50));
-    
+
     // Update fee to 1%
     client.update_fee(&100);
-    
+
     let (_, fee_bps) = client.get_config();
     assert_eq!(fee_bps, 100);
 }
@@ -740,7 +740,13 @@ fn test_fee_calculation_standard_amount() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release milestone
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -784,7 +790,13 @@ fn test_fee_calculation_small_amount() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release milestone
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -828,7 +840,13 @@ fn test_fee_calculation_large_amount() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release milestone
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -872,7 +890,13 @@ fn test_fee_calculation_boundary_value() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release milestone
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -926,7 +950,13 @@ fn test_multiple_milestone_releases_accumulate_fees() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release first milestone: 5000 * 50 / 10000 = 25 fee
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -974,7 +1004,13 @@ fn test_zero_fee_configuration() {
         },
     ];
 
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // Release milestone
     client.release_milestone(&escrow_id, &0, &token_client.address);
@@ -1012,7 +1048,13 @@ fn test_release_without_initialization() {
     ];
 
     // Create escrow without initializing contract
-    client.create_escrow(&escrow_id, &depositor, &recipient, &milestones, &token_client.address);
+    client.create_escrow(
+        &escrow_id,
+        &depositor,
+        &recipient,
+        &milestones,
+        &token_client.address,
+    );
 
     // This should panic with Error #11 (TreasuryNotInitialized)
     client.release_milestone(&escrow_id, &0, &token_client.address);

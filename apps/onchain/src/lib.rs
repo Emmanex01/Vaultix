@@ -1,6 +1,7 @@
 #![no_std]
 use soroban_sdk::{
-    token, Address, Env, Symbol, Vec, contract, contracterror, contractimpl, contracttype, symbol_short,
+    Address, Env, Symbol, Vec, contract, contracterror, contractimpl, contracttype, symbol_short,
+    token,
 };
 
 // Milestone status tracking
@@ -87,7 +88,7 @@ impl VaultixEscrow {
         treasury.require_auth();
 
         let fee = fee_bps.unwrap_or(DEFAULT_FEE_BPS);
-        
+
         // Validate fee is reasonable (max 100%)
         if fee < 0 || fee > BPS_DENOMINATOR {
             return Err(Error::InvalidFeeConfiguration);
@@ -307,19 +308,11 @@ impl VaultixEscrow {
         let token_client = token::TokenClient::new(&env, &token_address);
 
         // Transfer payout to recipient (seller)
-        token_client.transfer(
-            &env.current_contract_address(),
-            &escrow.recipient,
-            &payout,
-        );
+        token_client.transfer(&env.current_contract_address(), &escrow.recipient, &payout);
 
         // Transfer fee to treasury (only if fee > 0)
         if fee > 0 {
-            token_client.transfer(
-                &env.current_contract_address(),
-                &treasury,
-                &fee,
-            );
+            token_client.transfer(&env.current_contract_address(), &treasury, &fee);
 
             // Emit event for fee collection
             env.events().publish(
