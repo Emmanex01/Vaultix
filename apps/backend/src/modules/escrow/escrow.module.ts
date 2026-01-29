@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
 import { Escrow } from './entities/escrow.entity';
 import { Party } from './entities/party.entity';
 import { Condition } from './entities/condition.entity';
@@ -19,7 +18,11 @@ import { EscrowStellarIntegrationService } from './services/escrow-stellar-integ
     StellarModule,
   ],
   controllers: [EscrowController],
-  providers: [EscrowService, EscrowStellarIntegrationService, EscrowAccessGuard],
+  providers: [
+    EscrowService,
+    EscrowStellarIntegrationService,
+    EscrowAccessGuard,
+  ],
   exports: [EscrowService],
 })
 export class EscrowModule {}

@@ -12,14 +12,14 @@ export async function retryWithBackoff<T>(
   baseDelay: number,
   factor: number = 2,
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: unknown;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
       if (attempt === maxRetries) {
         break;
       }
@@ -28,10 +28,10 @@ export async function retryWithBackoff<T>(
       const delay = baseDelay * Math.pow(factor, attempt);
       const jitter = Math.random() * 0.1 * delay; // Add up to 10% jitter
       const totalDelay = delay + jitter;
-      
-      await new Promise(resolve => setTimeout(resolve, totalDelay));
+
+      await new Promise((resolve) => setTimeout(resolve, totalDelay));
     }
   }
 
-  throw lastError!;
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }

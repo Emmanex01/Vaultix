@@ -2,11 +2,13 @@ import { registerAs } from '@nestjs/config';
 
 export default registerAs('stellar', () => ({
   network: process.env.STELLAR_NETWORK || 'testnet', // 'testnet' or 'mainnet'
-  horizonUrl: process.env.HORIZON_URL || 
-    (process.env.STELLAR_NETWORK === 'mainnet' 
-      ? 'https://horizon.stellar.org' 
+  horizonUrl:
+    process.env.HORIZON_URL ||
+    (process.env.STELLAR_NETWORK === 'mainnet'
+      ? 'https://horizon.stellar.org'
       : 'https://horizon-testnet.stellar.org'),
-  networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE ||
+  networkPassphrase:
+    process.env.STELLAR_NETWORK_PASSPHRASE ||
     (process.env.STELLAR_NETWORK === 'mainnet'
       ? 'Public Global Stellar Network ; September 2015'
       : 'Test SDF Network ; September 2015'),

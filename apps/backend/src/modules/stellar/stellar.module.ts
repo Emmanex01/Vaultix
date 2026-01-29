@@ -5,16 +5,12 @@ import { StellarService } from '../../services/stellar.service';
 import { EscrowOperationsService } from '../../services/stellar/escrow-operations';
 
 @Module({
-  imports: [
-    ConfigModule.forFeature(stellarConfig),
-  ],
-  providers: [
-    StellarService,
-    EscrowOperationsService,
-  ],
+  imports: [ConfigModule.forFeature(stellarConfig)],
+  providers: [StellarService, EscrowOperationsService],
   exports: [
     StellarService,
     EscrowOperationsService,
+    ConfigModule.forFeature(stellarConfig),
   ],
 })
 export class StellarModule {}

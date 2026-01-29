@@ -24,7 +24,9 @@ export class EscrowOperationsService {
     deadline: number,
   ): StellarSdk.xdr.Operation[] {
     try {
-      this.logger.log(`Creating escrow initialization ops for escrow ID: ${escrowId}`);
+      this.logger.log(
+        `Creating escrow initialization ops for escrow ID: ${escrowId}`,
+      );
 
       // In a real implementation, this would involve Soroban contract calls
       // For now, we'll simulate the operations needed
@@ -46,10 +48,14 @@ export class EscrowOperationsService {
 
       operations.push(escrowCreationOp);
 
-      this.logger.log(`Created ${operations.length} operations for escrow initialization`);
+      this.logger.log(
+        `Created ${operations.length} operations for escrow initialization`,
+      );
       return operations;
     } catch (error) {
-      this.logger.error(`Failed to create escrow initialization ops: ${error.message}`);
+      this.logger.error(
+        `Failed to create escrow initialization ops: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -69,7 +75,9 @@ export class EscrowOperationsService {
     asset: StellarSdk.Asset,
   ): StellarSdk.xdr.Operation[] {
     try {
-      this.logger.log(`Creating funding ops for escrow ID: ${escrowId}, amount: ${amount}`);
+      this.logger.log(
+        `Creating funding ops for escrow ID: ${escrowId}, amount: ${amount}`,
+      );
 
       const operations: StellarSdk.xdr.Operation[] = [];
 
@@ -86,13 +94,22 @@ export class EscrowOperationsService {
       // Store escrow funding data
       const fundingDataOp = StellarSdk.Operation.manageData({
         name: `escrow_${escrowId}_funded`,
-        value: Buffer.from(JSON.stringify({ amount, asset: asset.toString() })),
+        value: Buffer.from(
+          JSON.stringify({
+            amount,
+            asset: asset.code
+              ? `${asset.code}:${asset.issuer || 'native'}`
+              : 'native',
+          }),
+        ),
         source: funderPublicKey,
       });
 
       operations.push(fundingDataOp);
 
-      this.logger.log(`Created ${operations.length} operations for escrow funding`);
+      this.logger.log(
+        `Created ${operations.length} operations for escrow funding`,
+      );
       return operations;
     } catch (error) {
       this.logger.error(`Failed to create funding ops: ${error.message}`);
@@ -119,7 +136,9 @@ export class EscrowOperationsService {
     asset: StellarSdk.Asset,
   ): StellarSdk.xdr.Operation[] {
     try {
-      this.logger.log(`Creating milestone release ops for escrow ID: ${escrowId}, milestone: ${milestoneId}`);
+      this.logger.log(
+        `Creating milestone release ops for escrow ID: ${escrowId}, milestone: ${milestoneId}`,
+      );
 
       const operations: StellarSdk.xdr.Operation[] = [];
 
@@ -142,10 +161,14 @@ export class EscrowOperationsService {
 
       operations.push(milestoneCompleteOp);
 
-      this.logger.log(`Created ${operations.length} operations for milestone release`);
+      this.logger.log(
+        `Created ${operations.length} operations for milestone release`,
+      );
       return operations;
     } catch (error) {
-      this.logger.error(`Failed to create milestone release ops: ${error.message}`);
+      this.logger.error(
+        `Failed to create milestone release ops: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -163,7 +186,9 @@ export class EscrowOperationsService {
     confirmationStatus: 'confirmed' | 'disputed' | 'released',
   ): StellarSdk.xdr.Operation[] {
     try {
-      this.logger.log(`Creating confirmation ops for escrow ID: ${escrowId}, status: ${confirmationStatus}`);
+      this.logger.log(
+        `Creating confirmation ops for escrow ID: ${escrowId}, status: ${confirmationStatus}`,
+      );
 
       const operations: StellarSdk.xdr.Operation[] = [];
 
@@ -185,7 +210,9 @@ export class EscrowOperationsService {
 
       operations.push(timestampOp);
 
-      this.logger.log(`Created ${operations.length} operations for confirmation`);
+      this.logger.log(
+        `Created ${operations.length} operations for confirmation`,
+      );
       return operations;
     } catch (error) {
       this.logger.error(`Failed to create confirmation ops: ${error.message}`);
@@ -203,7 +230,7 @@ export class EscrowOperationsService {
   createCancelOps(
     escrowId: string,
     cancellerPublicKey: string,
-    refundDestination: string,
+    // refundDestination: string,
   ): StellarSdk.xdr.Operation[] {
     try {
       this.logger.log(`Creating cancel ops for escrow ID: ${escrowId}`);
@@ -222,7 +249,9 @@ export class EscrowOperationsService {
       // In a real implementation, this would involve actual fund refund operations
       // For now, we're just recording the intent to cancel
 
-      this.logger.log(`Created ${operations.length} operations for escrow cancellation`);
+      this.logger.log(
+        `Created ${operations.length} operations for escrow cancellation`,
+      );
       return operations;
     } catch (error) {
       this.logger.error(`Failed to create cancel ops: ${error.message}`);
@@ -263,7 +292,9 @@ export class EscrowOperationsService {
 
       operations.push(clearTempDataOp);
 
-      this.logger.log(`Created ${operations.length} operations for escrow completion`);
+      this.logger.log(
+        `Created ${operations.length} operations for escrow completion`,
+      );
       return operations;
     } catch (error) {
       this.logger.error(`Failed to create completion ops: ${error.message}`);

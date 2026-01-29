@@ -9,6 +9,10 @@ import { Condition } from '../entities/condition.entity';
 import { StellarService } from '../../../services/stellar.service';
 import { EscrowOperationsService } from '../../../services/stellar/escrow-operations';
 import stellarConfig from '../../../config/stellar.config';
+import {
+  StellarSubmitTransactionResponse,
+  StellarTransactionResponse,
+} from '../../../types/stellar.types';
 
 @Injectable()
 export class EscrowStellarIntegrationService {
@@ -47,13 +51,17 @@ export class EscrowStellarIntegrationService {
       }
 
       // Get the depositor (usually the buyer)
-      const depositor = escrow.parties.find(party => party.role === 'buyer');
+      const depositor = escrow.parties.find(
+        (party) => party.role === ('buyer' as any),
+      );
       if (!depositor) {
         throw new Error(`Depositor not found for escrow ${escrowId}`);
       }
 
       // Get the recipient (usually the seller)
-      const recipient = escrow.parties.find(party => party.role === 'seller');
+      const recipient = escrow.parties.find(
+        (party) => party.role === ('seller' as any),
+      );
       if (!recipient) {
         throw new Error(`Recipient not found for escrow ${escrowId}`);
       }
@@ -61,19 +69,24 @@ export class EscrowStellarIntegrationService {
       // Convert conditions to milestones format
       const milestones = escrow.conditions.map((condition, index) => ({
         id: index,
-        amount: (parseFloat(escrow.amount.toString()) / escrow.conditions.length).toString(),
+        amount: (
+          parseFloat(escrow.amount.toString()) / escrow.conditions.length
+        ).toString(),
         description: condition.description,
       }));
 
       // Create operations for escrow initialization
-      const operations = this.escrowOperationsService.createEscrowInitializationOps(
-        escrowId,
-        depositor.user.walletAddress, // User's Stellar wallet address
-        recipient.user.walletAddress, // User's Stellar wallet address
-        'native', // Using XLM as the asset for this example
-        milestones,
-        escrow.expiresAt ? Math.floor(new Date(escrow.expiresAt).getTime() / 1000) : Math.floor(Date.now() / 1000) + 86400, // Convert to Unix timestamp or default to 24 hours
-      );
+      const operations =
+        this.escrowOperationsService.createEscrowInitializationOps(
+          escrowId,
+          depositor.user.walletAddress, // User's Stellar wallet address
+          recipient.user.walletAddress, // User's Stellar wallet address
+          'native', // Using XLM as the asset for this example
+          milestones,
+          escrow.expiresAt
+            ? Math.floor(new Date(escrow.expiresAt).getTime() / 1000)
+            : Math.floor(Date.now() / 1000) + 86400, // Convert to Unix timestamp or default to 24 hours
+        );
 
       // Build the transaction
       const transaction = await this.stellarService.buildTransaction(
@@ -82,12 +95,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully created on-chain escrow ${escrowId}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully created on-chain escrow ${escrowId}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to create on-chain escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to create on-chain escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -107,12 +125,15 @@ export class EscrowStellarIntegrationService {
     assetCode: string = 'XLM',
   ): Promise<string> {
     try {
-      this.logger.log(`Funding on-chain escrow ${escrowId} with ${amount} ${assetCode}`);
+      this.logger.log(
+        `Funding on-chain escrow ${escrowId} with ${amount} ${assetCode}`,
+      );
 
       // Determine asset
-      const asset = assetCode === 'XLM' || assetCode === 'native'
-        ? StellarSdk.Asset.native()
-        : new StellarSdk.Asset(assetCode, funderPublicKey); // Simplified - in reality, issuer would be different
+      const asset =
+        assetCode === 'XLM' || assetCode === 'native'
+          ? StellarSdk.Asset.native()
+          : new StellarSdk.Asset(assetCode, funderPublicKey); // Simplified - in reality, issuer would be different
 
       // Create funding operations
       const operations = this.escrowOperationsService.createFundingOps(
@@ -129,12 +150,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully funded escrow ${escrowId}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully funded escrow ${escrowId}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to fund on-chain escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to fund on-chain escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -158,12 +184,15 @@ export class EscrowStellarIntegrationService {
     assetCode: string = 'XLM',
   ): Promise<string> {
     try {
-      this.logger.log(`Releasing milestone ${milestoneId} for escrow ${escrowId}`);
+      this.logger.log(
+        `Releasing milestone ${milestoneId} for escrow ${escrowId}`,
+      );
 
       // Determine asset
-      const asset = assetCode === 'XLM' || assetCode === 'native'
-        ? StellarSdk.Asset.native()
-        : new StellarSdk.Asset(assetCode, recipientPublicKey); // Simplified
+      const asset =
+        assetCode === 'XLM' || assetCode === 'native'
+          ? StellarSdk.Asset.native()
+          : new StellarSdk.Asset(assetCode, recipientPublicKey); // Simplified
 
       // Create milestone release operations
       const operations = this.escrowOperationsService.createMilestoneReleaseOps(
@@ -182,12 +211,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully released milestone ${milestoneId} for escrow ${escrowId}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully released milestone ${milestoneId} for escrow ${escrowId}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to release milestone ${milestoneId} for escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to release milestone ${milestoneId} for escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -205,7 +239,9 @@ export class EscrowStellarIntegrationService {
     confirmationStatus: 'confirmed' | 'disputed' | 'released' = 'confirmed',
   ): Promise<string> {
     try {
-      this.logger.log(`Confirming escrow ${escrowId} with status: ${confirmationStatus}`);
+      this.logger.log(
+        `Confirming escrow ${escrowId} with status: ${confirmationStatus}`,
+      );
 
       // Create confirmation operations
       const operations = this.escrowOperationsService.createConfirmationOps(
@@ -221,12 +257,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully confirmed escrow ${escrowId} with status ${confirmationStatus}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully confirmed escrow ${escrowId} with status ${confirmationStatus}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to confirm escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to confirm escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -250,7 +291,6 @@ export class EscrowStellarIntegrationService {
       const operations = this.escrowOperationsService.createCancelOps(
         escrowId,
         cancellerPublicKey,
-        refundDestination,
       );
 
       // Build the transaction
@@ -260,12 +300,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully canceled escrow ${escrowId}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully canceled escrow ${escrowId}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to cancel on-chain escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to cancel on-chain escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -296,12 +341,17 @@ export class EscrowStellarIntegrationService {
       );
 
       // Submit the transaction to the Stellar network
-      const result = await this.stellarService.submitTransaction(transaction);
+      const result: StellarSubmitTransactionResponse =
+        await this.stellarService.submitTransaction(transaction);
 
-      this.logger.log(`Successfully completed escrow ${escrowId}, transaction: ${result.hash}`);
+      this.logger.log(
+        `Successfully completed escrow ${escrowId}, transaction: ${result.hash}`,
+      );
       return result.hash;
     } catch (error) {
-      this.logger.error(`Failed to complete on-chain escrow ${escrowId}: ${error.message}`);
+      this.logger.error(
+        `Failed to complete on-chain escrow ${escrowId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -316,24 +366,32 @@ export class EscrowStellarIntegrationService {
   monitorOnChainEscrow(
     escrowId: string,
     accountPublicKey: string,
-    callback: (transaction: any) => void,
+    callback: (transaction: StellarTransactionResponse) => void,
   ): EventSource {
-    this.logger.log(`Starting to monitor on-chain escrow ${escrowId} for account: ${accountPublicKey}`);
+    this.logger.log(
+      `Starting to monitor on-chain escrow ${escrowId} for account: ${accountPublicKey}`,
+    );
 
     // Create a wrapper callback that filters for our escrow-related transactions
-    const filteredCallback = (transaction: any) => {
+    const filteredCallback = (transaction: StellarTransactionResponse) => {
       // Check if this transaction relates to our escrow
-      const isEscrowRelated = transaction.memo
-        && typeof transaction.memo === 'string'
-        && transaction.memo.includes(escrowId);
+      const isEscrowRelated =
+        transaction.memo &&
+        typeof transaction.memo === 'string' &&
+        transaction.memo.includes(escrowId);
 
       if (isEscrowRelated) {
-        this.logger.log(`Detected escrow ${escrowId} related transaction: ${transaction.hash}`);
+        this.logger.log(
+          `Detected escrow ${escrowId} related transaction: ${transaction.hash}`,
+        );
         callback(transaction);
       }
     };
 
     // Stream transactions for the account
-    return this.stellarService.streamTransactions(accountPublicKey, filteredCallback);
+    return this.stellarService.streamTransactions(
+      accountPublicKey,
+      filteredCallback,
+    );
   }
 }
