@@ -1,5 +1,8 @@
 use super::*;
-use soroban_sdk::{Address, Env, testutils::{Address as _, Events}, token, vec, IntoVal};
+use soroban_sdk::{
+    testutils::{Address as _, Events},
+    token, vec, Address, Env, IntoVal,
+};
 
 /// Helper function to create and initialize a test token
 /// Returns admin client for minting and the token address
@@ -483,12 +486,10 @@ fn test_admin_resolves_dispute_to_recipient() {
     assert_eq!(escrow.status, EscrowStatus::Resolved);
     assert_eq!(escrow.resolution, Resolution::Recipient);
     assert_eq!(escrow.total_released, escrow.total_amount);
-    assert!(
-        escrow
-            .milestones
-            .iter()
-            .all(|m| m.status == MilestoneStatus::Released)
-    );
+    assert!(escrow
+        .milestones
+        .iter()
+        .all(|m| m.status == MilestoneStatus::Released));
 
     assert_eq!(token_client.balance(&recipient), 10000);
     assert_eq!(token_client.balance(&contract_id), 0);
@@ -547,12 +548,10 @@ fn test_admin_resolves_dispute_to_depositor() {
     assert_eq!(escrow.status, EscrowStatus::Resolved);
     assert_eq!(escrow.resolution, Resolution::Depositor);
     assert_eq!(escrow.total_released, 0);
-    assert!(
-        escrow
-            .milestones
-            .iter()
-            .all(|m| m.status == MilestoneStatus::Disputed)
-    );
+    assert!(escrow
+        .milestones
+        .iter()
+        .all(|m| m.status == MilestoneStatus::Disputed));
 
     assert_eq!(token_client.balance(&depositor), 5000);
     assert_eq!(token_client.balance(&contract_id), 0);

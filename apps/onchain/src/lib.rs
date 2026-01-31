@@ -1,7 +1,8 @@
 #![no_std]
+#![allow(unexpected_cfgs)]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, Address, Env, Symbol, Vec,
-    token,
+    contract, contracterror, contractimpl, contracttype, symbol_short, token, Address, Env, Symbol,
+    Vec,
 };
 
 #[contracttype]
@@ -308,7 +309,6 @@ impl VaultixEscrow {
     }
 
     /// Retrieves escrow details (read-only)
-
     pub fn get_escrow(env: Env, escrow_id: u64) -> Result<Escrow, Error> {
         let storage_key = get_storage_key(escrow_id);
         env.storage()
